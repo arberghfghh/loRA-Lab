@@ -1,0 +1,251 @@
+{
+  "_about": "Models the 📦 Models window can download. folder = a ComfyUI model folder (first path wins), or @models/<sub> for a folder under ComfyUI/models. ollama = a model pulled into Ollama; ollama_gguf = a GGUF downloaded, then registered in Ollama under that name.",
+  "groups": [
+    {
+      "id": "writer",
+      "name": "AI writer (stories, prompts, chat, manga)"
+    },
+    {
+      "id": "helpers",
+      "name": "Helpers (upscale, cut-out, pose sketch, face reference, tagger)"
+    },
+    {
+      "id": "3d",
+      "name": "Image to 3D"
+    }
+  ],
+  "items": [
+    {
+      "id": "writer4b",
+      "group": "writer",
+      "recommended": true,
+      "name": "Qwen 3.5 4B writer (uncensored)",
+      "about": "Writes prompts, stories, novels, chat replies and manga. Fits a 6 GB graphics card.",
+      "license": "Apache-2.0",
+      "vram": 6,
+      "ollama": {
+        "model": "huihui_ai/qwen3.5-abliterated:4b",
+        "size": 3320000000
+      }
+    },
+    {
+      "id": "tipo",
+      "group": "writer",
+      "recommended": true,
+      "name": "TIPO v2 tag expander",
+      "about": "Turns a short scene into a full list of anime tags. Runs on the processor in about a second.",
+      "license": "No license stated (see its model page)",
+      "ollama_gguf": {
+        "model": "tipov2",
+        "folder": "@models/prompt_writer/tipov2",
+        "name": "TIPOv2-1B-A200M-Q8_0.gguf",
+        "url": "https://huggingface.co/KBlueLeaf/TIPOv2-1B-A200M/resolve/main/gguf/TIPOv2-1B-A200M-Q8_0.gguf",
+        "size": 1072689632,
+        "template": "{{ .Prompt }}",
+        "parameters": {
+          "min_p": 0.1,
+          "num_ctx": 2048,
+          "stop": [
+            "<|eos|>"
+          ],
+          "temperature": 0.5
+        }
+      }
+    },
+    {
+      "id": "writer9b",
+      "group": "writer",
+      "name": "Qwen 3.5 9B writer (uncensored, better)",
+      "about": "Better writing than the 4B, but needs a 10 GB+ graphics card to be quick.",
+      "license": "Apache-2.0",
+      "vram": 10,
+      "ollama": {
+        "model": "huihui_ai/qwen3.5-abliterated:9b",
+        "size": 6590000000
+      }
+    },
+    {
+      "id": "upscale",
+      "group": "helpers",
+      "recommended": true,
+      "name": "Real-ESRGAN 4× upscaler",
+      "about": "The 4× upscale button in the Images tab.",
+      "license": "BSD-3-Clause",
+      "files": [
+        {
+          "folder": "upscale_models",
+          "name": "RealESRGAN_x4plus.pth",
+          "size": 67040989,
+          "url": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+        }
+      ]
+    },
+    {
+      "id": "birefnet",
+      "group": "helpers",
+      "recommended": true,
+      "name": "BiRefNet background remover",
+      "about": "Cut-outs in the Images tab and clean backgrounds for Image to 3D.",
+      "license": "MIT",
+      "files": [
+        {
+          "folder": "background_removal",
+          "name": "birefnet.safetensors",
+          "size": 444000000,
+          "url": "https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "pose",
+      "group": "helpers",
+      "recommended": true,
+      "name": "Pose sketch (SDPose + NoobAI OpenPose)",
+      "about": "Draw or upload a stick figure / photo and the picture copies its pose and expression (SDXL anime models).",
+      "license": "SDPose: MIT · OpenPose ControlNet: no license stated (see its model page)",
+      "files": [
+        {
+          "folder": "checkpoints",
+          "name": "sdpose_wholebody_fp16.safetensors",
+          "size": 1920000000,
+          "url": "https://huggingface.co/Comfy-Org/SDPose/resolve/main/checkpoints/sdpose_wholebody_fp16.safetensors"
+        },
+        {
+          "folder": "controlnet",
+          "name": "noob-sdxl-controlnet-openpose.safetensors",
+          "size": 2500000000,
+          "url": "https://huggingface.co/Laxhar/noob_openpose/resolve/main/openpose_pre.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "lineart",
+      "group": "helpers",
+      "name": "Sketch to picture (NoobAI line-art ControlNet + Anima LLLite)",
+      "about": "Turns your own line drawing into a finished picture.",
+      "license": "ControlNet: Fair AI Public License 1.0-SD · Anima LLLite: CircleStone non-commercial",
+      "files": [
+        {
+          "folder": "controlnet",
+          "name": "noob-sdxl-controlnet-lineart_anime.fp16.safetensors",
+          "size": 2500000000,
+          "url": "https://huggingface.co/Eugeoter/noob-sdxl-controlnet-lineart_anime/resolve/main/diffusion_pytorch_model.fp16.safetensors"
+        },
+        {
+          "folder": "model_patches",
+          "name": "anima-lllite-any-test-like-v2.safetensors",
+          "size": 20000000,
+          "url": "https://huggingface.co/Comfy-Org/Anima-LLLite/resolve/main/model_patches/anima-lllite-any-test-like-v2.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "union",
+      "group": "helpers",
+      "name": "ControlNet Union ProMax (SDXL)",
+      "about": "One ControlNet for rough sketches, edges and poses with photo-real SDXL models.",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "folder": "controlnet",
+          "name": "controlnet-union-sdxl-promax.safetensors",
+          "size": 2510000000,
+          "url": "https://huggingface.co/xinsir/controlnet-union-sdxl-1.0/resolve/main/diffusion_pytorch_model_promax.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "ipadapter",
+      "group": "helpers",
+      "name": "Face and style reference (IP-Adapter)",
+      "about": "Keeps a character's face from a reference picture (Characters tab), for SDXL models.",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "folder": "ipadapter",
+          "name": "ip-adapter-plus_sdxl_vit-h.safetensors",
+          "size": 847517512,
+          "url": "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors"
+        },
+        {
+          "folder": "ipadapter",
+          "name": "ip-adapter-plus-face_sdxl_vit-h.safetensors",
+          "size": 847517512,
+          "url": "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors"
+        },
+        {
+          "folder": "clip_vision",
+          "name": "clip_vision_h.safetensors",
+          "size": 1260000000,
+          "url": "https://huggingface.co/Comfy-Org/Wan-2.1/resolve/main/split_files/clip_vision/clip_vision_h.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "pixai",
+      "group": "helpers",
+      "recommended": true,
+      "name": "PixAI tagger 1.0",
+      "about": "Find tags: reads the tags, characters and artist style of any picture (Images tab, Image Info, LoRA training).",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "folder": "@models/pixai_tagger/pixai-tagger-v1.0",
+          "name": "config.json",
+          "size": 693918,
+          "url": "https://huggingface.co/pixai-labs/pixai-tagger-v1.0/resolve/main/config.json"
+        },
+        {
+          "folder": "@models/pixai_tagger/pixai-tagger-v1.0",
+          "name": "model.safetensors",
+          "size": 1945425796,
+          "url": "https://huggingface.co/pixai-labs/pixai-tagger-v1.0/resolve/main/model.safetensors"
+        }
+      ]
+    },
+    {
+      "id": "ccip",
+      "group": "helpers",
+      "recommended": true,
+      "name": "CCIP character likeness",
+      "about": "Rank by likeness in the Characters tab: how close each picture's anime character is to the reference picture. Runs on the processor.",
+      "license": "OpenRAIL (deepghs/ccip_onnx; use restrictions on its model page)",
+      "files": [
+        {
+          "folder": "@models/ccip/ccip-caformer-24-randaug-pruned",
+          "name": "model_feat.onnx",
+          "size": 150248245,
+          "url": "https://huggingface.co/deepghs/ccip_onnx/resolve/main/ccip-caformer-24-randaug-pruned/model_feat.onnx"
+        },
+        {
+          "folder": "@models/ccip/ccip-caformer-24-randaug-pruned",
+          "name": "model_metrics.onnx",
+          "size": 1649,
+          "url": "https://huggingface.co/deepghs/ccip_onnx/resolve/main/ccip-caformer-24-randaug-pruned/model_metrics.onnx"
+        },
+        {
+          "folder": "@models/ccip/ccip-caformer-24-randaug-pruned",
+          "name": "metrics.json",
+          "size": 147,
+          "url": "https://huggingface.co/deepghs/ccip_onnx/resolve/main/ccip-caformer-24-randaug-pruned/metrics.json"
+        }
+      ]
+    },
+    {
+      "id": "hunyuan3d",
+      "group": "3d",
+      "name": "Hunyuan3D 2.1",
+      "about": "Image to 3D: turns a picture into a 3D model you can download (GLB). Needs the background remover too.",
+      "license": "Tencent Hunyuan Community License (not for use in the EU, UK or South Korea)",
+      "vram": 8,
+      "files": [
+        {
+          "folder": "checkpoints",
+          "name": "3d/hunyuan_3d_v2.1.safetensors",
+          "size": 7370000000,
+          "url": "https://huggingface.co/Comfy-Org/Hunyuan-3D-2.1/resolve/main/hunyuan_3d_v2.1.safetensors"
+        }
+      ]
+    }
+  ]
+}

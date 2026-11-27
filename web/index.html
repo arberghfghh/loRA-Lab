@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kōbō</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0b0c">
+<script>try { if (localStorage.getItem("loraLab.theme") !== "\"light\"") document.documentElement.dataset.theme = "dark"; } catch { document.documentElement.dataset.theme = "dark"; }</script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="app">
+
+<nav class="side">
+  <div class="brand"><img src="icon-192.png" alt=""><b>Kōbō</b>
+    <button class="iconbtn" id="sideToggle" title="Collapse the sidebar"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 10l-2 2 2 2"/></svg></button></div>
+  <button class="newbtn" id="newImage" title="Start a new image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create New Image</span></button>
+  <div class="mode" id="modeSeg" title="Two separate workspaces: each keeps its own prompt, LoRAs, references and results">
+    <button data-m="general">General</button><button data-m="adult">Adult 18+</button><button data-m="story">Story</button>
+  </div>
+  <div class="navlist" id="tabs">
+    <div class="navgroup">Create</div>
+    <button data-tab="results" title="Image generation"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L8 21"/></svg><span class="lbl">Image Generation</span></button>
+    <button data-tab="workflow" title="Idea → prompt → AI review → test picture → your check → generate"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="9" width="5" height="6" rx="1"/><rect x="10" y="9" width="5" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/><path d="M7 12h3M15 12h3"/></svg><span class="lbl">Workflow</span></button>
+    <button data-tab="chat" title="Chat with a character who learns from your chats"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg><span class="lbl">Chat</span></button>
+    <div class="navgroup">Library</div>
+    <button data-tab="chars" title="Characters"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><span class="lbl">Characters</span></button>
+    <button data-tab="images" title="Images: favourites and one folder per character"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="lbl">Images</span></button>
+    <button data-tab="info" title="Image info: how a picture was made (app, model, LoRAs, prompt, settings)"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v.01M11 11v3"/></svg><span class="lbl">Image Info</span></button>
+    <button data-tab="share" title="Share files: upload to or download from this PC from any device on the same network"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span class="lbl">Share Files</span></button>
+  </div>
+  <div class="histhead"><input type="text" id="histSearch" placeholder="Search history…"></div>
+  <div class="history" id="history"></div>
+  <div class="navfoot">
+    <div class="navlist moremenu" id="moreMenu" hidden>
+    <button data-tab="3d" title="Image to 3D"><svg class="i" viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg><span class="lbl">Image to 3D</span></button>
+    <button data-tab="story" class="storyonly" title="Stories"><svg class="i" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7M8 11h7"/></svg><span class="lbl">Stories</span></button>
+    <button data-tab="game" title="Write the story of a game: world, characters, main story, quests and dialogue"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/></svg><span class="lbl">Game Story</span></button>
+    <button data-tab="novel" title="Write a novel: the AI plans it, then writes it chapter by chapter"><svg class="i" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/><path d="M9 7h7M9 11h5"/></svg><span class="lbl">Novel</span></button>
+    <button data-tab="manga" title="Make a black-and-white manga: the AI writes it, every panel is drawn and lettered with speech bubbles"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 10h18M13 10v11M8 3v7"/></svg><span class="lbl">Manga</span></button>
+    <button data-tab="train" title="Train a LoRA"><svg class="i" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/></svg><span class="lbl">Train LoRA</span></button>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="conn">Connecting to ComfyUI…</span><span id="queueInfo"></span></div>
+    <div class="footbtns">
+      <button class="pill" id="modelsBtn" title="Download drawing models, the AI writer and helpers">Models</button>
+      <button class="pill" id="devBtn" title="Open Kōbō on your phone, tablet or another computer on the same Wi-Fi">Devices</button>
+      <button class="pill" id="restartBtn" title="Restart ComfyUI and reload Kōbō, so changes to Kōbō and new models are picked up">Restart</button>
+      <a class="pill" href="guide.html" target="_blank" title="User guide">Guide</a>
+      <button class="pill" id="moreBtn" title="Tabs you use less: Image to 3D, Stories, Game Story, Novel, Manga, Train LoRA" aria-expanded="false" aria-controls="moreMenu">⋯ More</button>
+      <button class="pill" id="themeBtn" title="Light / dark" aria-label="Switch between light and dark"><svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <header class="topbar">
+    <b class="toptitle">Image Generation</b>
+    <div class="viewseg" id="viewSeg" role="group" aria-label="How to show results"><button data-v="single" title="One picture large, the rest of its batch beside it">Single</button><button data-v="sheet" title="Every picture: columns by LoRA, rows by seed">Contact sheet</button></div>
+    <span class="grow"></span>
+    <span class="wsbadge adultonly">18+ workspace</span>
+    <button class="pill" id="modeMini" title="Switch workspace"></button>
+    <div class="toolbar" id="resultsBar">
+      <span class="grow" id="progressText"></span>
+      <label class="inline" id="thumbWrap" style="margin:0;font-size:12px;color:var(--muted)">Thumb size <input type="range" id="thumb" min="120" max="420" step="10" style="width:110px"></label>
+      <button class="btn sm danger" id="cancel">Cancel queued</button>
+      <button class="btn sm" id="freeVram" title="Unload models from GPU memory">Free VRAM</button>
+      <button class="btn sm danger" id="clearResults">Clear results</button>
+      <button class="btn sm" id="variations" title="Same prompt, 10 images, each with its own random seed">🎲 ×10 seeds</button>
+      <button class="btn sm primary" id="generate2" title="Generate (Ctrl+Enter)">▶ Generate</button>
+    </div>
+    <button class="pill" id="histBtn" title="Recent images">History</button>
+  </header>
+  <div class="canvas" id="canvas">
+
+
+  <div id="tabStory" style="display:none">
+    <div class="pagehead"><h2>Stories</h2><span class="hint">A story told in 50+ images: the AI writes it scene by scene, then every scene is drawn with your character</span>
+      <span class="grow"></span><button class="btn primary" id="stNew">＋ New story</button></div>
+    <div class="card" id="stForm" style="display:none">
+      <div class="h"><span>New story</span></div>
+      <div class="row">
+        <div><label for="stChar">Character</label><select id="stChar"></select></div>
+        <div><label for="stCostar">Co-star <span class="hint" style="display:inline">(optional)</span></label><select id="stCostar"></select></div>
+      </div>
+      <div class="row">
+        <div><label for="stLevel">Type</label><select id="stLevel"><option value="safe">General</option>
+          <option value="spicy">Explicit 18+ (outfit stays on, topless OK)</option><option value="nude">Nude 18+</option>
+          <option value="strip">Dressed → nude 18+ (clothes come off as it goes)</option></select></div>
+        <div><label for="stCount">Images</label><input type="number" id="stCount" min="20" max="300" step="5" value="60"></div>
+        <div><label for="stVariants">Versions per scene</label><select id="stVariants"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+      </div>
+      <label for="stPremise">What happens <span class="hint" style="display:inline">(a few sentences; leave it empty and the AI invents a story)</span></label>
+      <textarea id="stPremise" rows="4" placeholder="e.g. A night at the lantern festival: she poses for photos by the river, a stranger joins her, and it gets heated…"></textarea>
+      <div class="inline" style="margin:6px 0 2px;gap:10px"><button class="btn" id="stVideo" type="button">From video</button>
+        <input type="file" id="stVideoFile" accept="video/*" style="display:none">
+        <span class="hint" style="display:inline">The AI watches a video and writes what happens above, retold with your characters (pick them and the type first; 2-4 min)</span></div>
+      <label class="check"><input type="checkbox" id="stMix" checked> Mix portrait and landscape images <span class="hint" style="display:inline">(lying and wide scenes become landscape)</span></label>
+      <label class="check"><input type="checkbox" id="stFace" checked> Keep face <span class="hint" style="display:inline">(copies the face from the character's reference image)</span></label>
+      <div class="genrow"><div class="sum" id="stStatus"></div><button class="btn" id="stCancelForm">Cancel</button><button class="btn primary" id="stWrite">Write story</button></div>
+    </div>
+    <div class="card" id="stIdeaCard">
+      <div class="h"><span>Story from one line</span></div>
+      <div class="inline" style="flex-wrap:wrap">
+        <input type="text" id="stIdea" maxlength="400" style="flex:1;min-width:240px" placeholder="e.g. date at the beach between mia and leo">
+        <select id="stIdeaLevel" style="width:auto"><option value="safe">General</option><option value="spicy">Explicit 18+</option><option value="nude">Nude 18+</option><option value="strip">Dressed → nude 18+</option></select>
+        <button class="btn primary" id="stIdeaGo">Make story</button>
+      </div>
+      <details class="more moretools" id="moreTools"><summary>More tools <span class="hint" style="display:inline">assistant, tag layout, tag library, tag finder</span></summary>
+      <div class="inline idea-row asst-row">
+        <input type="text" id="asstIn" placeholder="Ask the assistant, e.g. make 4 pictures of her at the beach at sunset, landscape" title="Your local AI model (picked in the Write with AI row) writes the prompt and presses Generate">
+        <button class="btn sm" id="asstBtn">Ask</button>
+      </div>
+      <div class="hint" id="asstLog"></div>
+      <details class="more tlbox" id="tlBox"><summary>Tag layout <span class="hint" style="display:inline">fill the lines in order, they build the prompt above</span></summary>
+        <div class="tlgrid" id="tlGrid"></div>
+        <div class="inline" style="margin-top:6px"><button class="btn sm" id="tlClear" title="Empty every line (the Quality line keeps its value)">Clear lines</button></div>
+      </details>
+        <div class="inline" style="margin-top:6px"><button class="btn sm" id="openLib">Tag library</button><button class="btn sm" id="openFinder">Tag finder</button></div>
+      </details>
+      <label class="check"><input type="checkbox" id="stIdeaDraw" checked> Draw the images as soon as it's written</label>
+      <details class="help"><summary>ⓘ How it works</summary><div class="hint">Name characters from the Characters tab: the first one named is the main character, the second the co-star. The AI writes the title, chapters and every scene (60 images; change the number with ＋ New story).</div></details>
+    </div>
+    <div id="stList" class="stlist"></div>
+    <div id="stView" style="display:none"></div>
+  </div>
+
+  <div id="tabGame" style="display:none">
+    <div class="pagehead"><h2>Game Story</h2><span class="hint">The AI writes the story of a game: world, characters, main story, quests and dialogue. Text only</span>
+      <span style="flex:1"></span><button class="btn primary" id="gmNew">＋ New game</button></div>
+    <div class="card" id="gmForm" style="display:none">
+      <div class="h"><span>New game</span></div>
+      <label for="gmIdea" style="margin-top:0">What the game is about <span class="hint" style="display:inline">(a line or a few sentences; leave it empty and the AI invents a game)</span></label>
+      <textarea id="gmIdea" rows="3" maxlength="2000" placeholder="e.g. A courier in a flooded city discovers that the letters she carries rewrite the past…"></textarea>
+      <div class="row3">
+        <div><label for="gmGenre">Genre</label><input type="text" id="gmGenre" list="gmGenres" maxlength="80" placeholder="e.g. RPG"></div>
+        <div><label for="gmTone">Tone <span class="hint" style="display:inline">(optional)</span></label><input type="text" id="gmTone" maxlength="120" placeholder="e.g. dark, funny, cosy"></div>
+        <div><label for="gmSize">Size</label><select id="gmSize"><option value="small">Small (3 main quests)</option>
+          <option value="medium" selected>Medium (5 main quests)</option><option value="large">Large (8 main quests)</option></select></div>
+      </div>
+      <label>Your characters in the game <span class="hint" style="display:inline">(optional: tick who should be in it; the AI gives them roles, and their pictures in Game art use their look, LoRAs and face)</span></label>
+      <div id="gmChars" class="gmchars"></div>
+      <div id="gmPlayerRow" style="display:none"><label for="gmPlayer">The player plays</label><select id="gmPlayer" style="width:auto"></select></div>
+      <datalist id="gmGenres"><option>RPG</option><option>Adventure</option><option>Visual novel</option><option>Horror</option><option>Action</option>
+        <option>Shooter</option><option>Survival</option><option>Strategy</option><option>Puzzle</option><option>Platformer</option><option>Dating sim</option></datalist>
+      <div class="genrow"><div class="sum" id="gmStatus"></div><button class="btn" id="gmCancel">Cancel</button><button class="btn primary" id="gmWrite">Write game story</button></div>
+    </div>
+    <div id="gmList" class="gmlist"></div>
+    <div id="gmView" style="display:none"></div>
+  </div>
+
+  <div id="tabNovel" style="display:none">
+    <div class="pagehead"><h2>Novel</h2><span class="hint">The AI plans a novel and writes it chapter by chapter. Text only</span>
+      <span style="flex:1"></span><button class="btn primary" id="nvNew">＋ New novel</button></div>
+    <div class="card" id="nvForm" style="display:none">
+      <div class="h"><span>New novel</span></div>
+      <label for="nvIdea" style="margin-top:0">What the novel is about <span class="hint" style="display:inline">(a line or a few sentences; leave it empty and the AI invents a story)</span></label>
+      <textarea id="nvIdea" rows="3" maxlength="2000" placeholder="e.g. A lighthouse keeper finds letters from a sailor who drowned fifty years ago — and they keep arriving…"></textarea>
+      <div class="row3">
+        <div><label for="nvGenre">Genre</label><input type="text" id="nvGenre" list="nvGenres" maxlength="80" placeholder="e.g. Fantasy"></div>
+        <div><label for="nvTone">Tone <span class="hint" style="display:inline">(optional)</span></label><input type="text" id="nvTone" maxlength="120" placeholder="e.g. dark, funny, romantic"></div>
+        <div><label for="nvLength">Length</label><select id="nvLength"><option value="short">Short (6 chapters, ~7,000 words)</option>
+          <option value="medium" selected>Medium (10 chapters, ~16,000 words)</option><option value="long">Long (16 chapters, ~32,000 words)</option></select></div>
+      </div>
+      <label for="nvPov">Told in</label>
+      <select id="nvPov" style="width:auto"><option value="third" selected>Third person (she / he / they)</option><option value="first">First person (I), by the main character</option></select>
+      <label>Your characters in the novel <span class="hint" style="display:inline">(optional: tick who should be in it; the AI gives them roles)</span></label>
+      <div id="nvChars" class="gmchars"></div>
+      <div id="nvPlayerRow" style="display:none"><label for="nvPlayer">The main character</label><select id="nvPlayer" style="width:auto"></select></div>
+      <datalist id="nvGenres"><option>Fantasy</option><option>Romance</option><option>Mystery</option><option>Thriller</option><option>Science fiction</option>
+        <option>Horror</option><option>Adventure</option><option>Historical</option><option>Comedy</option><option>Drama</option><option>Erotica</option></datalist>
+      <div class="genrow"><div class="sum" id="nvStatus"></div><button class="btn" id="nvCancel">Cancel</button><button class="btn primary" id="nvWrite">Write novel</button></div>
+    </div>
+    <div id="nvList" class="gmlist"></div>
+    <div id="nvView" style="display:none"></div>
+  </div>
+
+  <div id="tabManga" style="display:none">
+    <div class="pagehead"><h2>Manga</h2><span class="hint">The AI writes a black-and-white manga; every panel is drawn with the model and LoRAs on the right and lettered with speech bubbles</span>
+      <span style="flex:1"></span><button class="btn primary" id="mgNew">＋ New manga</button></div>
+    <div class="card" id="mgForm" style="display:none">
+      <div class="h"><span>New manga</span></div>
+      <label for="mgIdea" style="margin-top:0">What it's about <span class="hint" style="display:inline">(a line or a few sentences; leave it empty and the AI invents a story)</span></label>
+      <textarea id="mgIdea" rows="3" maxlength="2000" placeholder="e.g. A shy librarian finds out the new transfer student is a fox spirit hiding in plain sight"></textarea>
+      <div class="row3">
+        <div><label for="mgGenre">Genre</label><input type="text" id="mgGenre" list="mgGenres" maxlength="80" placeholder="e.g. Romantic comedy"></div>
+        <div><label for="mgPages">Pages</label><input type="number" id="mgPages" min="1" max="40" step="1" value="6"></div>
+        <div><label for="mgDir">Read from</label><select id="mgDir"><option value="rtl">Right to left (like Japanese manga)</option><option value="ltr">Left to right</option></select></div>
+      </div>
+      <label>Your characters in it <span class="hint" style="display:inline">(optional: they keep their look and LoRAs; the AI invents everyone else)</span></label>
+      <div id="mgChars" class="gmchars"></div>
+      <div id="mgPlayerRow" style="display:none"><label for="mgPlayer">The main character</label><select id="mgPlayer" style="width:auto"></select></div>
+      <datalist id="mgGenres"><option>Romantic comedy</option><option>Action</option><option>Fantasy</option><option>Slice of life</option><option>Horror</option>
+        <option>Mystery</option><option>Sports</option><option>Isekai</option><option>Science fiction</option><option>Drama</option><option>Ecchi</option></datalist>
+      <details class="help"><summary>ⓘ How it works</summary><div class="hint">Every panel is drawn with the model, LoRAs and settings chosen on the right. Illustrious / NoobAI or Anima work best for manga.</div></details>
+      <div class="genrow"><div class="sum" id="mgStatus"></div><button class="btn" id="mgCancel">Cancel</button><button class="btn primary" id="mgWrite">Write and draw</button></div>
+    </div>
+    <div id="mgList" class="gmlist"></div>
+    <div id="mgView" style="display:none"></div>
+  </div>
+
+  <div id="tabChat" style="display:none">
+    <div class="pagehead"><h2>Chat</h2><span class="hint">Talk to a character. They learn from your chats and remember it in the next one. Text only</span>
+      <span style="flex:1"></span><button class="btn primary" id="ctNew">＋ New character</button></div>
+    <div class="card" id="ctForm" style="display:none">
+      <div class="h"><span>New chat character</span></div>
+      <div class="row">
+        <div><label for="ctName" style="margin-top:0">Name</label><input type="text" id="ctName" maxlength="60" placeholder="e.g. Mira"></div>
+        <div><label for="ctBase" style="margin-top:0">Picture and look from <span class="hint" style="display:inline">(optional: one of your characters)</span></label><select id="ctBase"></select></div>
+      </div>
+      <label for="ctPersona">How they act and what they like</label>
+      <textarea id="ctPersona" rows="5" maxlength="4000" placeholder="Their personality, how they talk, what they like and hate, their job, their past, how they feel about you… e.g. Mira is a sarcastic but warm barista who loves rainy days and old sci-fi films. She teases people she likes and secretly writes poetry."></textarea>
+      <div class="row">
+        <div><label for="ctGreeting">First message <span class="hint" style="display:inline">(optional)</span></label><textarea id="ctGreeting" rows="2" maxlength="2000" placeholder="What they say when a new chat starts"></textarea></div>
+        <div><label for="ctYou">They call you <span class="hint" style="display:inline">(optional)</span></label><input type="text" id="ctYou" maxlength="60" placeholder="your name"></div>
+      </div>
+      <div class="genrow"><div class="sum" id="ctStatus"></div><button class="btn" id="ctCancel">Cancel</button><button class="btn primary" id="ctMake">Start chatting</button></div>
+    </div>
+    <div id="ctList" class="gmlist"></div>
+    <div id="ctView" style="display:none"></div>
+  </div>
+
+  <div id="tabImages" style="display:none">
+    <div class="pagehead"><h2>Images</h2><span class="hint">Everything in output/LoRA-Lab: favourites and one folder per character</span>
+      <span style="flex:1"></span>
+      <button class="btn" id="imUpFav" style="display:none" title="Real-ESRGAN 4× on every favourite that has no upscaled copy yet (about a minute each). Saved in output/LoRA-Lab/upscaled">⤢ Upscale all</button>
+      <button class="btn" id="imDlFav" style="display:none" title="Every favourite at full size in one .zip">⬇ Download all</button>
+      <button class="btn" id="imSetsBtn" title="Group pictures into your own named sets">Sets</button>
+      <button class="btn" id="imSelect">Select</button>
+      <button class="btn" id="imAllBtn" style="display:none">Select all</button>
+      <button class="btn" id="imOut" style="display:none">Take out of set</button>
+      <button class="btn danger" id="imDelete" style="display:none">Delete selected</button></div>
+    <div class="chars" id="imChars">
+      <div class="charlist" id="imFolders"></div>
+      <div style="min-width:0"><div class="subh" id="imTitle" style="margin-top:0"></div><div class="imgrid" id="imGrid"></div>
+        <div style="text-align:center;margin-top:12px"><button class="btn" id="imMore" style="display:none">Show more</button></div></div>
+      <aside class="imsets" id="imSets" style="display:none">
+        <div class="head"><b>Image sets</b><button class="btn sm" id="imSetsClose" title="Close the sets panel">✕</button></div>
+        <div class="inline"><input type="text" id="imSetName" maxlength="60" placeholder="New set name"><button class="btn sm primary" id="imSetNew">＋ New</button></div>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">Drag pictures onto a set, or Select some and press ＋ on a set. Sets only group pictures: the files stay where they are.</div></details>
+        <div class="charlist" id="imSetList"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="tabInfo" style="display:none">
+    <div class="pagehead"><h2>Image Info</h2><span class="hint">How a picture was made: app, model, LoRAs, prompt and settings, read from the file itself</span></div>
+    <div class="ii">
+      <div class="card">
+        <input type="file" id="iiFile" accept="image/*" hidden>
+        <div class="drop" id="iiDrop" tabindex="0" title="Picture: drop, paste or click"><img id="iiImg" alt=""><span id="iiDropText">Drop a picture here, or click to choose one.<br>Or open any result and press Info.</span></div>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint" style="margin-top:8px">Use the original file. Screenshots, and pictures saved from Discord, X or most social sites, have this info removed. A picture copied from a web page and pasted loses it too: save it and drop the file instead.</div></details>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint" style="margin-top:6px">Reads ComfyUI (and Kōbō), AUTOMATIC1111 / Forge / Civitai, NovelAI (even after Photoshop), Fooocus, InvokeAI, SwarmUI, Midjourney and Content Credentials (ChatGPT, Firefly…).</div></details>
+      </div>
+      <div class="card" id="iiOut"><div class="hint">Drop a picture to see how it was made.</div></div>
+    </div>
+  </div>
+
+  <div id="tabShare" style="display:none">
+    <div class="pagehead"><h2>Share Files</h2><span class="hint">Move files between this PC and your other devices on the same network: open Kōbō on the other device (Devices button), then upload or download here</span></div>
+    <div class="card">
+      <input type="file" id="shFile" multiple hidden>
+      <div class="drop" id="shDrop" tabindex="0" title="Files: drop or click"><span id="shDropText">Drop files here, or click to choose them.</span></div>
+      <div class="hint" id="shFolder" style="margin-top:8px"></div>
+      <div id="shList"></div>
+    </div>
+  </div>
+
+  <div id="tab3d" style="display:none">
+    <div class="pagehead"><h2>Image to 3D</h2><span class="hint">Turn one object or character into a 3D model</span></div>
+    <div class="m3">
+      <div class="card">
+        <div class="h"><span>Source image</span></div>
+        <input type="file" id="m3File" accept="image/*" hidden>
+        <div class="drop" id="m3Drop" tabindex="0" title="Source image: drop, paste or click"><img id="m3Img" alt=""><span id="m3DropText">Drop an image of one object or character, paste (Ctrl+V), or click.<br>Or open any result and press Make 3D.</span></div>
+        <label style="margin-top:10px">Back and sides <span class="hint" style="display:inline">(optional: better shape and colours all round)</span></label>
+        <input type="file" id="m3ViewFile" accept="image/*" hidden>
+        <div class="m3views" id="m3Views"></div>
+        <div class="m3viewbar"><button class="btn sm" id="m3MakeViews">Draw them</button><span class="hint" id="m3ViewsHint"></span></div>
+        <label class="check"><input type="checkbox" id="m3AutoViews"> Draw missing side and back views when I press Make 3D</label>
+        <label class="check"><input type="checkbox" id="m3Cut"> Remove the background first <span class="hint" style="display:inline">(recommended)</span></label>
+        <label class="check"><input type="checkbox" id="m3Paint"> Paint it with the picture's colours</label>
+        <label class="check"><input type="checkbox" id="m3Clean"> Clean up (remove floating bits, smooth shading)</label>
+        <label for="m3Model">3D model</label>
+        <select id="m3Model"></select>
+        <label for="m3Detail">Mesh detail</label>
+        <select id="m3Detail"><option value="192">Draft (fastest)</option><option value="256">Normal</option><option value="384">High (slow, more VRAM)</option></select>
+        <div class="row3 m3row4">
+          <div><label for="m3Steps">Steps</label><input type="number" id="m3Steps" min="5" max="80"></div>
+          <div><label for="m3Cfg">CFG</label><input type="number" id="m3Cfg" min="1" max="12" step="0.5"></div>
+          <div><label for="m3Seed">Seed</label><input type="number" id="m3Seed" min="0"></div>
+          <div><label for="m3Faces">Faces</label><input type="number" id="m3Faces" min="0" step="10000" placeholder="all"
+            title="How many faces (triangles) the 3D file gets. Empty = all of them (about 300,000, best). Fewer = smaller file, but thin cloth like capes can tear."></div>
+        </div>
+        <label class="check"><input type="checkbox" id="m3AutoSeed"> New random seed every time</label>
+        <div class="genrow"><div class="sum" id="m3Status"></div><button class="btn primary" id="m3Go">Make 3D</button></div>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">Works best with one object or character, fully in frame, on a plain background. Takes a few minutes on this GPU, about 2 more per side or back view it has to draw.</div></details>
+      </div>
+      <div class="card m3view">
+        <div class="bar" id="m3Bar"></div>
+        <div id="m3Stage" style="width:100%;height:100%"></div>
+        <div class="m3empty" id="m3Empty">Your 3D model appears here.<br>Drag to rotate, scroll to zoom, right-drag to pan.</div>
+        <div class="m3links" id="m3Links"></div>
+      </div>
+    </div>
+    <div class="subh">Recent 3D models <span class="hint">— this workspace only · saved in output/LoRA-Lab/3d</span></div>
+    <div class="m3list" id="m3List"></div>
+  </div>
+
+  <div id="tabTrain" style="display:none">
+    <div class="pagehead"><h2>Train a LoRA</h2><span class="hint">Teach a model a character, outfit or art style from 15–40 images</span></div>
+    <div class="chars">
+      <div class="charlist">
+        <div class="inline"><input type="text" id="dsNewName" placeholder="New dataset name" maxlength="40"><button class="btn sm primary" id="dsNew">+ New</button></div>
+        <div class="charlist" id="dsList"></div>
+        <div class="subh" style="margin-bottom:4px">Training runs <span class="hint">— this workspace</span></div>
+        <div class="charlist" id="trJobs"></div>
+      </div>
+      <div class="chared">
+        <div class="hint" id="dsEmpty" style="padding:30px 10px;text-align:center">Create a dataset on the left: give it a name, drop in 15–40 images of your character, outfit or style,<br>let Auto-caption tag them, then press Start training.</div>
+        <div id="dsForm" style="display:none">
+          <div class="inline"><h3 id="dsTitle" style="margin:0;flex:1;font-size:18px"></h3><span class="hint" id="dsCount" style="margin:0"></span></div>
+          <label for="dsTrigger">Trigger word <span class="hint" style="display:inline">— a made-up word that will stand for what you're teaching, e.g. <i>mychar_v1</i>; it starts every caption</span></label>
+          <input type="text" id="dsTrigger" maxlength="60">
+          <input type="file" id="dsFiles" accept="image/*" multiple hidden>
+          <div class="drop" id="dsDrop" tabindex="0" style="margin-top:10px"><span>Drop images here, paste (Ctrl+V) or click. Varied poses, angles, outfits and backgrounds work best.</span></div>
+          <div class="inline tfopts" style="margin-top:10px">
+            <label for="dsKind" style="margin:0">Teaching</label>
+            <select id="dsKind"><option value="character">a character</option><option value="outfit">an outfit or object</option><option value="style">an art style</option></select>
+            <label style="margin:0" title="Lower = more tags per image">Tag threshold <input type="range" id="dsThr" min="0.2" max="0.8" step="0.05" style="width:90px;vertical-align:middle"> <span id="dsThrV"></span></label>
+            <label class="check"><input type="checkbox" id="dsOverwrite"> Replace existing captions</label>
+            <span style="flex:1"></span>
+            <button class="btn sm primary" id="dsAuto">Auto-caption</button>
+          </div>
+          <div class="hint" id="dsKindHint"></div>
+          <div class="inline" style="margin-top:8px"><input type="text" id="dsBulk" placeholder="A tag to add to or remove from every caption"><button class="btn sm" id="dsBulkAdd">Add to all</button><button class="btn sm" id="dsBulkDel">Remove from all</button></div>
+          <div class="hint" id="dsStatus"></div>
+          <div class="dsgrid" id="dsGrid"></div>
+          <div class="subh">Train</div>
+          <div class="row3">
+            <div><label for="trFamily" style="margin-top:0">Model type</label><select id="trFamily"><option value="sd15">SD 1.5</option><option value="sdxl">Illustrious / Pony (SDXL)</option><option value="anima">Anima</option></select></div>
+            <div><label for="trCkpt" style="margin-top:0">Train on</label><select id="trCkpt"></select></div>
+            <div><label for="trName" style="margin-top:0">LoRA name</label><input type="text" id="trName" maxlength="40"></div>
+          </div>
+          <div class="row3">
+            <div><label for="trSteps">Steps</label><input type="number" id="trSteps" min="100" max="10000" step="100"></div>
+            <div><label for="trRank">Size (rank)</label><select id="trRank"><option value="8">8 · small</option><option value="16">16 · standard</option><option value="32">32 · detailed styles</option></select></div>
+            <div><label for="trLr">Learning rate</label><select id="trLr"><option value="0.00005">0.00005 · gentle</option><option value="0.0001">0.0001 · standard</option><option value="0.0002">0.0002 · fast</option></select></div>
+          </div>
+          <div class="genrow"><div class="sum" id="trEstimate"></div><button class="btn primary" id="trGo">Start training</button></div>
+          <details class="help"><summary>ⓘ How it works</summary><div class="hint">Every image is checked by the tagger first; images that look like a child can't be trained on. Training uses the whole GPU, so images you generate meanwhile wait in the queue.</div></details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabChars" style="display:none">
+    <div class="pagehead"><h2>Characters</h2><span class="hint">Keep a look, outfit, LoRAs and reference image together</span></div>
+    <div class="chars">
+      <div class="charlist">
+        <button class="btn primary" id="charNew">+ New character</button>
+        <div class="charlist" id="charList"></div>
+      </div>
+      <div class="chared">
+        <div class="hint" id="charEmpty" style="padding:30px 10px;text-align:center">Create a character to keep their look, outfit, LoRAs and reference image together.<br>Then pick them in the <b>Character</b> tab of the right panel — your prompt only needs the scene.</div>
+        <div id="charForm" style="display:none">
+          <div class="chargrid"><div>
+          <div class="charhead">
+            <input type="file" id="charRefFile" accept="image/*" hidden>
+            <div class="charref" id="charRefDrop" tabindex="0" title="Reference image: drop, paste or click"><img id="charRefImg" alt=""><span>Drop a reference image here, or click</span></div>
+            <div style="flex:1;min-width:220px">
+              <label for="charName">Name</label><input type="text" id="charName" maxlength="60">
+              <label for="charEngine">Made for</label>
+              <select id="charEngine"><option value="any">Any model type</option><option value="sdxl">Illustrious / Pony</option><option value="sd15">SD 1.5</option><option value="anima">Anima</option><option value="klein">Klein</option><option value="zimage">Z-Image</option></select>
+              <div class="inline" style="margin-top:10px;flex-wrap:wrap">
+                <button class="btn sm primary" id="charUseBtn">Use this character</button>
+                <button class="btn sm" id="charAutoTag" title="Read appearance and outfit tags from the reference image">Tags from image</button>
+                <button class="btn sm" id="charLearn" title="Train a LoRA from this character's gallery, so they look the same in any outfit and pose">Learn this character</button>
+                <button class="btn sm danger" id="charDelete">Delete</button>
+                <span class="hint" id="charSaved"></span>
+              </div>
+            </div>
+          </div>
+          <label for="charAppearance">Appearance <span class="hint" style="display:inline">— stays the same (hair, eyes, body)</span></label><textarea id="charAppearance" rows="3" placeholder="1girl, long silver hair, golden eyes, …"></textarea>
+          <label for="charOutfit">Outfit <span class="hint" style="display:inline">— change this to change clothes</span></label><textarea id="charOutfit" rows="2" placeholder="black kimono, red obi, …"></textarea>
+          <div class="hint">Tip: click into Appearance or Outfit, then click tags in the Tag library below to add them here.</div>
+          <label>Character LoRAs <span class="hint" style="display:inline">— added to every image of this character</span></label>
+          <div id="charLoras"></div>
+          <div class="inline"><select id="charLoraPick"></select><button class="btn sm" id="charLoraAdd">Add</button></div>
+          <label for="charMemory">Memory <span class="hint" style="display:inline">— personality, backstory, rules about how they look; the AI prompt writer reads this when writing prompts</span></label>
+          <textarea id="charMemory" rows="4" placeholder="e.g. Calm and confident, always wears a silver ring on her left hand, never smiles with teeth, from a coastal town…"></textarea>
+          <details class="charmore"><summary>Trigger words, negative tags and notes</summary>
+          <label for="charTriggers">Name tag / trigger words</label><input type="text" id="charTriggers" placeholder="e.g. a LoRA trigger word or a known character tag">
+          <label for="charNegative">Extra negative tags</label><input type="text" id="charNegative">
+          <label for="charNotes">Notes</label><textarea id="charNotes" rows="2"></textarea>
+          </details>
+          <div class="seqbox" id="learnBox" style="display:none">
+            <div class="seqhead"><b>Learn this character</b><span class="hint" style="margin:0">untick images where they don't look right</span><span class="grow"></span>
+              <button class="btn sm" id="learnAll">Tick all</button><button class="iconbtn" id="learnClose" title="Close">✕</button></div>
+            <div class="hint" id="learnInfo" style="margin-bottom:8px"></div>
+            <div class="learngrid" id="learnGrid"></div>
+            <div class="row3">
+              <div><label for="learnCkpt">Train on (Illustrious / Pony or Anima)</label><select id="learnCkpt"></select></div>
+              <div><label for="learnSteps">Steps</label><input type="number" id="learnSteps" min="500" max="5000" step="100"></div>
+              <div><label class="check" style="margin-top:28px"><input type="checkbox" id="learnSwitch"> <span id="learnSwitchLbl">Use Illustrious / Pony for them afterwards</span></label></div>
+            </div>
+            <div class="genrow"><div class="sum" id="learnEstimate"></div><button class="btn primary" id="learnGo">Start learning</button></div>
+            <div class="hint" id="learnStatus"></div>
+          </div>
+          </div><div class="chargal">
+          <div class="subh" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>Gallery <span id="charCount"></span> <span class="hint">— this workspace only · ★ favourite · ⤴ use as reference</span></span>
+            <button class="btn sm" id="charRank" style="margin-left:auto;display:none" title="Sort the gallery by how close each picture's character is to the reference image (CCIP, one character per picture)">Rank by likeness</button>
+            <button class="btn sm" id="charDownloadAll" style="display:none" title="Download every image in this gallery as one .zip file">⬇ Download all</button></div>
+          <div class="cgallery" id="charGallery"></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div id="libSlotChars" style="margin-top:14px"></div>
+  </div>
+
+  <div id="tabWorkflow" style="display:none">
+    <div class="pagehead"><h2>Workflow</h2><span class="hint">Idea → prompt → AI review → one test picture → your check → generate. Uses the model, LoRAs and settings on the right</span></div>
+    <div class="wf">
+      <div class="card">
+        <div class="wfmodels" id="wfModels">
+          <div><span class="hint">Image model</span> <b id="wfImgModel"></b> <span class="hint" id="wfImgNote"></span></div>
+          <div class="inline"><span class="hint">AI writer</span> <select id="wfLlm" class="llmpick" title="The local AI that writes, reviews, plans and edits for the Workflow"></select></div>
+        </div>
+        <label for="wfChar">Character</label>
+        <select id="wfChar" title="The same active character as the right panel's Character tab"></select>
+        <div class="hint" id="wfCharNote"></div>
+        <label for="wfIdea">Idea</label>
+        <div class="inline"><input type="text" id="wfIdea" placeholder="a knight resting by a campfire at night (or leave empty to draw your own prompt / shot list)"><button class="btn sm primary" id="wfStart">Start</button><button class="btn sm" id="wfGo" title="Draw the Prompt box right away, like Image Generation: no AI writer, review or test picture. With Make a set on and a shot list, it draws the whole set">Generate</button><button class="btn sm" id="wfLoadFile" title="A .txt or .md file with one prompt per line: it is drawn right away">Load prompts file</button><input type="file" id="wfFile" accept=".txt,.md,text/plain,text/markdown" hidden></div>
+        <label class="check" title="Like the themed sets AI artists post on Patreon"><input type="checkbox" id="wfSet"> Make a set</label>
+        <label for="wfPrompt">Prompt <span class="hint" style="display:inline">written, then checked by the AI; edit it whenever you like</span></label>
+        <textarea id="wfPrompt" rows="4" placeholder="The AI writes the prompt here"></textarea>
+        <div id="wfSetBox" style="display:none">
+          <div class="hint">A set like AI artists post on Patreon: the same character, outfit and place in every shot; only the pose, camera angle and expression change. The test picture is the hero shot, and every other shot is drawn from it.</div>
+          <div class="inline"><label for="wfSetShots" style="margin:0">Shots</label><input type="number" id="wfSetShots" min="4" max="35" value="12" style="flex:none;width:80px"></div>
+          <label for="wfShotList">Shot list <span class="hint" style="display:inline">one shot per line, planned by the AI after the review; edit it before you make the set. Or paste your own (a SHARED: line goes to the Prompt), leave the idea empty and press Start</span></label>
+          <textarea id="wfShotList" rows="6" placeholder="1. full body, standing, looking at viewer&#10;2. upper body, from side, smile&#10;…"></textarea>
+          <div class="hint" id="wfStages"></div>
+        </div>
+        <div class="wfchat">
+          <label for="wfChatIn">Tell the AI what to change <span class="hint" style="display:inline">add or remove things in the prompt and shot list</span></label>
+          <div class="wflog" id="wfLog" aria-live="polite"></div>
+          <div class="inline"><input type="text" id="wfChatIn" placeholder="e.g. remove the lantern, add rain, make shot 3 a close-up"><button class="btn sm primary" id="wfChatBtn">Send</button><button class="btn sm" id="wfChatUndo" hidden>Undo</button></div>
+        </div>
+        <div class="flowbox" id="flowBox" style="display:none"></div>
+        <div class="wfshots" id="wfShots"></div>
+      </div>
+      <div class="card">
+        <label for="wfFolder">Your folder</label>
+        <div class="inline"><input type="text" id="wfFolder" placeholder="e.g. C:\Users\you\Pictures\my-project"><button class="btn sm" id="wfFolderSet">Use this folder</button><button class="btn sm" id="wfFolderReload" title="Read the folder again" aria-label="Read the folder again">↻</button></div>
+        <div class="hint" id="wfFolderInfo">No folder yet.</div>
+        <details class="help"><summary>ⓘ What it uses</summary><div class="hint"><b>.txt</b> files: one idea per line. <b>.md</b> files: notes the AI writer and reviewer follow (style, characters, rules). <b>Pictures</b>: click one to use it as the reference image. Every approved picture is copied into an <b>approved</b> folder inside it. Kōbō only reads this folder.</div></details>
+        <div class="wfsub" id="wfIdeasHead">Ideas</div>
+        <div class="wfideas" id="wfIdeas"></div>
+        <div class="wfsub">Reference pictures</div>
+        <div class="wfrefs" id="wfRefs"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabResults">
+    <div class="hero" id="hero"><span class="hero-badge" id="heroBadge"></span><h2>What would you like to draw today?</h2></div>
+    <div class="card composer" id="composer">
+      <div class="comp-top">
+        <button class="reftile" id="composerRef" title="Reference image: click, or drop an image here"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L8 21M16 3v6M13 6h6"/></svg><img id="composerRefImg" alt=""><span class="who">👤</span></button>
+        <button class="iconbtn expand" id="expandPrompt" title="Bigger prompt box"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+      </div>
+      <div class="promptbox" id="promptBox" title="Top: what you want (70%). Bottom: what you don't want (30%). Drag the bottom edge to resize.">
+        <textarea id="prompt" rows="4" placeholder="1girl, solo, long silver hair, ..."></textarea>
+        <div class="negpane"><label for="negativeQuick">Negative</label><textarea id="negativeQuick" rows="2" placeholder="What you don't want in the picture"></textarea><button class="btn sm" id="negQuickReset" title="Reset to model default">↺</button></div>
+      </div>
+      <div class="inline idea-row">
+        <input type="text" id="idea" placeholder="…or describe an idea and let the AI write the prompt (e.g. a knight resting by a campfire at night)">
+        <select id="llmModel" class="llmpick" title="Which local AI model writes prompts and plans sequences"></select>
+        <button class="btn sm" id="dolphinBtn">Write</button>
+      </div>
+      <div class="hint" id="dolphinStatus"></div>
+      <div class="seqbox" id="seqBox" style="display:none">
+        <div class="seqhead"><b>Sequence</b><span class="hint" style="margin:0">one continuous action, one image per moment</span><span class="grow"></span>
+          <label for="seqCount">Frames <input type="number" id="seqCount" min="2" max="8"></label>
+          <button class="iconbtn" id="seqOff" title="Turn sequence off">✕</button></div>
+        <div class="inline"><input type="text" id="seqStory" placeholder="What happens from start to finish, e.g. she walks through the park from the entrance gate to the exit at the far end">
+          <button class="btn sm" id="seqPlan" title="Let the AI split the action into frames">Plan frames</button></div>
+        <div class="hint" id="seqStatus"></div>
+        <div id="seqFrames"></div>
+        <label class="check"><input type="checkbox" id="seqSameSeed"> Same seed for every frame <span class="hint" style="display:inline">(keeps the character and lighting closer)</span></label>
+        <label class="check"><input type="checkbox" id="seqCarry"> Keep the look of frame 1 <span class="hint" style="display:inline" id="seqCarryHint"></span></label>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">The prompt above is shared by every frame: put who, outfit, place and time of day there; each frame only adds its moment.</div></details>
+      </div>
+      <div class="seqbox" id="sentBox" style="display:none">
+        <div class="seqhead"><b>Tags → sentences</b><span class="hint" style="margin:0">paste raw tags, get a prompt written in sentences</span><span class="grow"></span>
+          <label for="sentCount">Sentences <input type="number" id="sentCount" min="2" max="8" value="4"></label>
+          <button class="iconbtn" id="sentOff" title="Close">✕</button></div>
+        <textarea id="sentTags" rows="3" placeholder="1girl, solo, long hair, red kimono, cherry blossoms, night, lantern, from side, smile"></textarea>
+        <div class="inline" style="margin-top:6px"><button class="btn sm" id="sentFromPrompt" title="Copy the tags in the prompt box above into this box">↓ Tags from prompt</button>
+          <span class="grow" style="flex:1"></span><button class="btn sm primary" id="sentGo">Make sentences</button></div>
+        <div class="hint" id="sentStatus"></div>
+        <textarea id="sentOut" rows="4" placeholder="The sentences appear here; you can edit them."></textarea>
+        <div class="inline" style="margin-top:6px"><button class="btn sm" id="sentUse" title="Replace the prompt with these sentences">Use as prompt</button>
+          <button class="btn sm" id="sentCopy">Copy</button></div>
+      </div>
+      <div class="seqbox" id="vidBox" style="display:none">
+        <div class="seqhead"><b>Video describer</b><span class="hint" style="margin:0">the AI watches a video and describes it; turn any moment into a picture</span><span class="grow"></span>
+          <button class="iconbtn" id="vidOff" title="Close">✕</button></div>
+        <div class="inline"><button class="btn sm primary" id="vidPick">Choose video…</button><input type="file" id="vidFile" accept="video/*" hidden>
+          <span class="hint" style="display:inline">runs on this PC with JoyCaption; about 1-3 minutes</span></div>
+        <div class="hint" id="vidStatus"></div>
+        <textarea id="vidSummary" rows="5" placeholder="The description of the whole video appears here; you can edit it." style="display:none"></textarea>
+        <div class="inline" id="vidSumRow" style="margin-top:6px;display:none"><button class="btn sm" id="vidSumUse" title="Let the AI write a prompt from the whole description">→ Prompt from description</button></div>
+        <div id="vidMoments"></div>
+      </div>
+      <div class="genrow">
+        <div class="chips">
+          <button class="chip" data-go="idea"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>Write with AI</button>
+          <button class="chip" data-go="ref"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L8 21"/></svg>Reference</button>
+          <button class="chip" data-go="pose"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M6 9l6 2 6-2M9 21l3-7 3 7"/></svg>Pose</button>
+          <button class="chip" data-go="seq"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="6" height="14" rx="1"/><rect x="9" y="5" width="6" height="14" rx="1"/><rect x="16" y="5" width="6" height="14" rx="1"/></svg>Sequence</button>
+          <button class="chip" data-go="vid"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="m16 10 6-3v10l-6-3"/></svg>Video</button>
+          <button class="chip" data-go="sent"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 10h10M4 14h16M4 18h8"/></svg>Sentences</button>
+        </div>
+        <div class="sum" id="summary"></div>
+        <button class="genbtn" id="generate" title="Generate (Ctrl+Enter)">Generate <span class="kbd">Ctrl+Enter</span></button>
+      </div>
+    </div>
+    <div class="lock" id="lockNote">Child-related terms are always added to the negative prompt.</div>
+    <aside id="tagDrawer" data-show="lib" aria-label="Tags">
+      <div class="tdhead"><button data-show="lib" class="on">Tag library</button><button data-show="finder">Tag finder</button><button class="x" id="tagDrawerClose" aria-label="Close tags" title="Close">×</button></div>
+      <div class="tdbody">
+    <div id="libSlotCreate">
+    <section class="card collapsible" id="libCard">
+      <div class="h"><span>Tag library <span id="libNote" class="hint" style="font-weight:400"></span></span>
+        <button class="btn sm" id="libEdit" title="Add or remove library tags">Edit</button></div>
+      <input type="text" id="libSearch" placeholder="Search tags…">
+      <div class="cats" id="libCats"></div>
+      <div class="libtags" id="libTags"></div>
+      <div class="hint" id="libHint">Click a tag to add it to the prompt, click again to remove it.</div>
+      <div id="libEditor" style="display:none">
+        <label for="libNewTags">Add tags to <b id="libTarget"></b></label>
+        <div class="inline"><input type="text" id="libNewTags" placeholder="e.g. red scarf, fox ears, glowing eyes"><button class="btn sm" id="libAddTags">Add</button></div>
+        <div class="inline" style="margin-top:6px">
+          <button class="btn sm" id="libFromPrompt" title="Save every tag in the current prompt into this category">+ From current prompt</button>
+          <span style="flex:1"></span>
+          <button class="btn sm danger" id="libDelCat">Delete category</button>
+        </div>
+        <label for="libNewCat">New category</label>
+        <div class="inline"><input type="text" id="libNewCat" placeholder="e.g. Characters"><button class="btn sm" id="libAddCat">Create</button></div>
+        <label for="libPaste">Paste &amp; sort <span class="hint" style="display:inline">— paste any amount of tags or captions; the AI puts each tag into the category it fits</span></label>
+        <textarea id="libPaste" rows="4" placeholder="1girl, long_hair, blue eyes, school uniform, classroom, …"></textarea>
+        <div class="inline" style="margin-top:6px"><button class="btn sm primary" id="libSort">Sort into categories</button><span class="hint" id="libSortStatus" style="margin:0"></span></div>
+        <div id="libSorted"></div>
+      </div>
+    </section>
+    </div>
+    <section class="card collapsible" id="tfCard">
+      <div class="h"><span>TagFinder <span class="hint" style="font-weight:400">— related tags from booru sites</span></span></div>
+      <div class="inline"><input type="text" id="tfTag" placeholder="Main tag, e.g. knight, shiba inu, kimono"><button class="btn sm primary" id="tfGo">Find</button></div>
+      <div class="inline tfopts">
+        <span class="inline" id="tfSites"></span>
+        <span class="grow" style="flex:1"></span>
+        <select id="tfCat" title="Which kind of tags to show">
+          <option value="general">General tags</option><option value="character">Characters</option>
+          <option value="copyright">Series</option><option value="all">All kinds</option></select>
+        <select id="tfRating" class="adultonly" title="Only learn from posts with this rating">
+          <option value="general">General posts</option><option value="sensitive">Sensitive</option>
+          <option value="questionable">Questionable</option><option value="explicit">Explicit</option><option value="any">Any rating</option></select>
+      </div>
+      <div class="hint" id="tfStatus"></div>
+      <div class="libtags tftags" id="tfTags"></div>
+      <div class="inline" id="tfActions" style="display:none;margin-top:8px">
+        <span class="hint" style="margin:0;flex:1">Click a tag to add it to the prompt · example images · → search that tag</span>
+        <button class="btn sm" id="tfAllToPrompt">+ All to prompt</button>
+        <button class="btn sm" id="tfToLib" title="Save every tag shown into the selected Tag library category">Save to library</button>
+      </div>
+      <div class="tfview" id="tfView" style="display:none">
+        <div class="inline"><b id="tfViewTitle" style="flex:1"></b><select id="tfViewSite"></select><button class="iconbtn" id="tfViewClose" title="Close the examples">✕</button></div>
+        <div class="tfgrid" id="tfGrid"></div>
+        <div class="inline" style="justify-content:center;margin-top:8px"><span class="hint" id="tfViewStatus"></span><button class="btn sm" id="tfMore" style="display:none">Load more</button></div>
+      </div>
+    </section>
+      </div>
+    </aside>
+    <div id="stageArea">
+    <div id="stage"></div>
+    <div id="results"></div>
+    <div class="empty" id="empty">
+      <b style="font-size:15px">Getting started</b>
+      <ol>
+        <li>Pick a <b>model</b> in the right panel's <b>Model</b> tab.</li>
+        <li>Tick the <b>LoRAs</b> you want to compare (or none).</li>
+        <li>Write a <b>prompt</b> below — or press <b>Write with AI</b> and describe an idea. Click tags in the <b>Tag library</b> (under <b>More tools</b>) to add them.</li>
+        <li>Press <b>Generate</b> (or Ctrl+Enter). Every LoRA gets its own column with the same seed.</li>
+      </ol>
+      <span class="hint">Optional: a <b>Character</b> keeps a look, outfit and LoRAs together; a <b>Reference image</b> lets you start from a picture.</span>
+    </div>
+    </div>
+  </div>
+  </div>
+</main>
+
+<select id="paneSel" class="panesel" aria-label="Show the settings panel"><option value="">Panel: hidden</option><option value="model">Model</option><option value="char">Character</option><option value="settings">Settings</option></select>
+<aside class="panel">
+  <div class="ptabs" id="ptabs"><button data-p="model">Model</button><button data-p="char">Character</button><button data-p="settings">Settings</button></div>
+  <div class="ppanes">
+
+  <div class="ppane" data-pane="model">
+    <div class="modelcard"><div class="mimg" id="mcImg"></div><div style="min-width:0;flex:1"><b><span id="mcName"></span><span class="eng" id="mcEng"></span></b><div class="tagline" id="mcTag"></div></div></div>
+    <section>
+      <div class="h"><span>Quick Select</span></div>
+      <div class="qs" id="engineSeg">
+        <button data-e="sdxl" title="SDXL checkpoints: Illustrious, Pony, NoobAI, WAI…"><div class="qimg"></div>Illustrious / Pony</button>
+        <button data-e="sd15" title="Stable Diffusion 1.5 checkpoints: NovelAI Anime V2, Anything, Counterfeit…"><div class="qimg"></div>SD 1.5</button>
+        <button data-e="anima" title="Anima — anime, tag prompts"><div class="qimg"></div>Anima</button>
+        <button data-e="klein" title="FLUX.2 Klein — natural-language prompts"><div class="qimg"></div>Klein</button>
+        <button data-e="zimage" title="Z-Image Turbo — photoreal, renders text, commercial-use license"><div class="qimg"></div>Z-Image</button>
+      </div>
+      <div class="hint" id="engineHint" style="margin-top:8px"></div>
+      <label for="model">Model</label>
+      <select id="model"></select>
+      <div class="hint" id="specHint" style="margin-top:4px"></div>
+      <div id="alsoWrap" style="display:none">
+        <label>Also generate with <span class="hint" style="display:inline">(same prompt and seed, each model with its own settings)</span></label>
+        <div id="alsoModels" style="display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div id="sdxlExtra" class="adv">
+        <div class="row">
+          <div><label for="vae">VAE</label><select id="vae"></select></div>
+          <div><label for="clipSkip">Clip skip</label><select id="clipSkip"><option value="1">1</option><option value="2">2</option></select></div>
+        </div>
+      </div>
+      <div id="unetExtra" class="adv">
+        <div class="row">
+          <div><label for="te">Text encoder</label><select id="te"></select></div>
+          <div><label for="avae">VAE</label><select id="avae"></select></div>
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="h"><span>LoRA <small>(Add-ons)</small> <small id="loraCount"></small></span>
+        <span class="inline"><button class="btn sm" id="selAll">All</button><button class="btn sm" id="selNone">None</button><button class="btn sm" id="noLoraBtn">No LoRA</button><button class="btn sm" id="mergeLoras" title="Save the ticked LoRAs, at their strengths, as one new LoRA">Merge</button><button class="btn sm" id="reloadLoras" title="Rescan LoRA folder">↻</button></span></div>
+      <div class="inline" id="mergeRow" style="display:none;margin-bottom:6px"><input type="text" id="mergeName" aria-label="Name for the merged LoRA" placeholder="Name for the merged LoRA" style="flex:1;min-width:0"><button class="btn sm" id="mergeGo">Save merge</button></div>
+      <div class="mixseg" role="group" aria-label="How to use the ticked LoRAs"><input type="checkbox" id="loraMix" hidden><button type="button" data-mix="0" title="Each ticked LoRA gets its own column, to compare them">Compare</button><button type="button" data-mix="1" title="Use the ticked LoRAs together in each image">Use together</button></div>
+      <label class="check" id="baselineWrap"><input type="checkbox" id="baseline"> <span id="baselineText">Include a "No LoRA" image for comparison</span></label>
+      <details class="dropbox" id="loraDrop"><summary id="loraPick">No LoRAs ticked</summary>
+        <div class="dropbody">
+          <input type="text" id="loraFilter" placeholder="Search LoRAs…">
+          <label class="check adultonly"><input type="checkbox" id="showGenLoras"> Also show General LoRAs</label>
+          <label class="check adv"><input type="checkbox" id="showAll"> Show LoRAs made for other model types</label>
+          <details class="help" id="loraHidden" style="display:none"><summary id="loraHiddenSum">Hidden LoRAs</summary>
+            <div class="hint" id="loraTabNote"></div><div class="hint" id="loraMoved"></div></details>
+          <div class="loras" id="loraList"><div class="hint">Loading…</div></div>
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <div class="ppane" data-pane="char" style="display:none">
+    <section>
+      <div class="h"><span>Character <small>(optional)</small></span><button class="btn sm" id="charEditActive" style="display:none">Edit</button></div>
+      <select id="charActive"></select>
+      <div id="charActiveBox" style="display:none">
+        <div class="charmini"><img id="charMiniImg" alt=""><div style="min-width:0"><b id="charMiniName"></b><div class="hint" id="charMiniInfo"></div></div></div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="cuAppearance"> Appearance</label>
+          <label class="check"><input type="checkbox" id="cuOutfit"> Outfit</label>
+          <label class="check"><input type="checkbox" id="cuLoras"> Their LoRAs</label>
+          <label class="check"><input type="checkbox" id="cuRef"> Reference image</label>
+          <label class="check" title="Copy the face from the character's reference image, whatever the prompt or seed"><input type="checkbox" id="cuFace"> Keep face</label>
+        </div>
+        <label for="newLookMode">With an empty prompt</label>
+        <select id="newLookMode" title="What Generate does when the prompt box is empty and this character is picked">
+          <option value="ai">New outfit, pose &amp; place, written by AI</option>
+          <option value="random">New outfit, pose &amp; place from the Tag library</option>
+          <option value="off">Just the character as saved</option></select>
+        <div id="newLookExtraWrap" style="display:none;margin-top:6px">
+          <label for="newLookExtra">Extra 18+ tags for every new look</label>
+          <input type="text" id="newLookExtra" placeholder="e.g. lingerie, cleavage, bedroom" title="Saved for this character; added to each new outfit, pose and place">
+          <div class="inline" id="newLookCats" style="flex-wrap:wrap;gap:4px;margin:4px 0"></div>
+          <label class="check" title="Random tags (and the + buttons above) prefer tags that often appear together with these tags on Danbooru, e.g. sex → positions, sex acts and expressions that go with it. Looked up once per tag with TagFinder."><input type="checkbox" id="newLookAssoc"> Random tags go with these tags</label>
+          <label class="check" id="newLookAdultWrap" title="Nudity, Sex acts / Positions, Lingerie & fetish wear and Rule34 popular"><input type="checkbox" id="newLookAdult"> Also add random 18+ tags from the Tag library</label>
+          <label class="check" id="newLookAdultAiWrap" title="The AI writes a sexy outfit (or none), a sexual pose and an intimate place"><input type="checkbox" id="newLookAdultAi"> 18+ only: the AI writes an explicit outfit, pose &amp; place</label>
+        </div>
+        <div id="faceWrap" style="display:none">
+          <label for="faceWeight">Face strength: <span id="faceWeightV"></span></label>
+          <input type="range" id="faceWeight" min="0.2" max="0.8" step="0.05" style="width:100%">
+          <div class="hint">0.5 is a good start. Higher copies the face more closely but can wash out the colours.</div>
+        </div>
+        <div class="hint" id="faceNote" style="display:none;margin:4px 0"></div>
+        <div class="inline" style="flex-wrap:wrap;margin-top:8px">
+          <button class="btn sm" id="charRestore" title="Model, size, LoRAs and strengths you last used with this character here">↺ Use last settings</button>
+          <select id="charRecent" style="flex:1;min-width:140px"></select>
+        </div>
+      </div>
+    </section>
+    <section id="refSection">
+      <div class="h"><span>Reference images <small>(optional)</small></span><button class="btn sm" id="refClear" style="display:none">Clear</button></div>
+      <input type="file" id="refFile" accept="image/*" hidden>
+      <div class="drop" id="drop" tabindex="0"><img id="refImg" alt="Reference"><span id="dropText">Image 1: drop, paste (Ctrl+V), or click to choose</span></div>
+      <div id="extraRefsWrap" style="display:none">
+        <input type="file" id="extraRefFile" accept="image/*" hidden>
+        <div class="inline" id="extraRefs" style="margin-top:8px"></div>
+        <div class="hint" id="extraRefsHint"></div>
+        <div id="ipaWrap" style="display:none">
+          <div class="row">
+            <div><label for="ipaMode">Image 2 copies</label>
+              <select id="ipaMode"><option value="look">Look &amp; style</option><option value="face">Face</option></select></div>
+            <div><label for="ipaWeight">Strength: <span id="ipaWeightV"></span></label>
+              <input type="range" id="ipaWeight" min="0.1" max="1" step="0.05" style="width:100%"></div>
+          </div>
+          <div class="hint">0.4–0.5 mixes the reference with your prompt; higher copies it more closely.</div>
+        </div>
+        <div id="snapWrap" style="display:none">
+          <div class="row">
+            <div><label for="snapMode">Image 2 copies</label>
+              <select id="snapMode"><option value="cs">Character &amp; art style</option><option value="char">Character only (style from model &amp; prompt)</option></select></div>
+            <div><label for="snapWeight">Strength: <span id="snapWeightV"></span></label>
+              <input type="range" id="snapWeight" min="0" max="1.5" step="0.05" style="width:100%"></div>
+          </div>
+          <div class="hint">1 is what SnapRef was trained on. Describe only the scene, pose and place; hair, eyes and outfit come from Image 2.</div>
+        </div>
+      </div>
+      <div id="refGen" style="display:none">
+        <label class="check" id="useRefRow"><input type="checkbox" id="useRef"> <b>Use the reference images</b>&nbsp;when generating</label>
+        <div class="hint" id="refCharNote" style="display:none;margin:6px 0"></div>
+        <div id="refGenOpts">
+          <div id="kleinModeWrap">
+            <label for="kleinRefMode">Klein mode</label>
+            <select id="kleinRefMode">
+              <option value="reference">Reference edit — keeps the person/scene, prompt says what to change</option>
+              <option value="img2img">Image-to-image — like the other models</option>
+            </select>
+          </div>
+          <div id="denoiseWrap">
+            <label for="denoise">How much to change: <span id="denoiseV"></span> <span class="hint" style="display:inline">(low = stay close to the image)</span></label>
+            <input type="range" id="denoise" min="0.2" max="1" step="0.05" style="width:100%">
+          </div>
+          <button class="btn sm" id="refShape" style="margin-top:6px"></button>
+        </div>
+      </div>
+      <div id="refControls" style="display:none">
+        <div class="inline" title="One tagger built from PixAI and Haruka voting together: the most accurate in Kōbō's tests, about 2 s per picture">
+          <span class="hint" style="margin:0">Tagger:</span> <b>Kōbō</b>
+          <span class="hint" style="display:inline;margin:0">(PixAI + Haruka)</span>
+          <label class="check" title="Pick the image readers yourself (WD, e621, JoyCaption…). They rarely beat the Kōbō tagger and are slower."><input type="checkbox" id="tagAdvanced"> Advanced</label>
+        </div>
+        <div class="inline" id="tagModels" style="display:none" title="Image taggers work together: PixAI and Haruka vote (the best pair), WD is optional, JoyCaption (slower, ~8 s) confirms what it sees">
+          <span class="hint" style="margin:0">Taggers:</span>
+          <label class="check"><input type="checkbox" value="wd"> WD</label>
+          <label class="check"><input type="checkbox" value="pixai"> PixAI</label>
+          <label class="check" title="2026 tagger with 98,800 tags: finds characters PixAI misses (models/haruka_tagger)"><input type="checkbox" value="haruka"> Haruka</label>
+          <label class="check" title="Adds e621 tags the others don't have (species, feral, creature and fetish tags). Best on furry/creature pictures; on plain anime it can mistake people for anthro."><input type="checkbox" value="e621"> e621</label>
+          <label class="check" title="Camie v2: 70,500 tags, many rare ones the others miss. Not measured against the Kōbō tagger yet (models/camie_tagger)"><input type="checkbox" value="camie"> Camie</label>
+          <label class="check"><input type="checkbox" value="joycaption"> JoyCaption</label>
+        </div>
+        <label for="refThr">Tag threshold: <span id="refThrV"></span> <span class="hint" style="display:inline">(lower = more tags)</span></label>
+        <input type="range" id="refThr" min="0.2" max="0.8" step="0.01" style="width:100%">
+        <label class="check" title="Drop a general tag when a more specific one covers it (bikini when o-ring bikini is there), and keep only one breast size and one hair length"><input type="checkbox" id="refSimple"> Most specific tags only</label>
+        <label class="check"><input type="checkbox" id="refChars"> Include character and series names</label>
+        <div id="refNameRow">
+          <label for="refNameThr">Name threshold: <span id="refNameThrV"></span> <span class="hint" style="display:inline">(higher = only names it's sure of)</span></label>
+          <input type="range" id="refNameThr" min="0.35" max="0.95" step="0.01" style="width:100%">
+        </div>
+      </div>
+      <div class="refbox" id="refOut"></div>
+    </section>
+    <section id="poseSection">
+      <div class="h"><span>Pose &amp; expression sketch <small>(optional)</small></span><button class="btn sm" id="poseClear" style="display:none">Clear</button></div>
+      <input type="file" id="poseFile" accept="image/*" hidden>
+      <div class="drop" id="poseDrop" tabindex="0"><img id="poseImg" alt="Sketch"><span>Drop a sketch, storyboard frame or stick figure, or click. The character takes its pose and expression.</span></div>
+      <div id="poseOpts" style="display:none">
+        <label class="check"><input type="checkbox" id="poseOn"> Use the sketch when generating</label>
+        <div id="poseKindWrap">
+          <label for="poseKind">What to copy</label>
+          <select id="poseKind"><option value="pose">Only the pose and expression, not the clothes, hair or background</option><option value="clean">Clean line art: follow the lines and face closely</option><option value="rough">A rough sketch or stick figure: follow the pose loosely</option></select>
+        </div>
+        <div id="poseCtl">
+          <label for="poseStrength">How closely to follow: <span id="poseStrengthV"></span></label>
+          <input type="range" id="poseStrength" min="0.3" max="1.3" step="0.05" style="width:100%">
+          <label class="check"><input type="checkbox" id="poseDark"> Dark lines on a light background</label>
+        </div>
+        <button class="btn sm" id="poseShape" style="margin-top:6px"></button>
+        <div class="hint" id="poseNote"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ppane" data-pane="settings" style="display:none">
+    <section id="extraSection">
+      <div class="h"><span>Extra detail &amp; two people</span></div>
+      <div id="teaWrap">
+        <label for="teaCache">Speed up (Anima)</label>
+        <select id="teaCache"><option value="off">Off</option><option value="safe">Safe</option><option value="fast">Faster</option></select>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint" id="teaNote">TeaCache: skips work on steps that barely change the picture. Safe keeps it almost identical; Faster can soften small details. Works with the er_sde, euler and euler a samplers.</div></details>
+      </div>
+      <div id="nagWrap">
+        <label><input type="checkbox" id="nagOn"> Negative prompt on Turbo (Anima)</label>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">NAG (Anima Normalized Attention Guidance): the Turbo presets run at CFG 1, where the negative prompt is ignored. NAG brings it back. Only used when CFG is 1.5 or lower.</div></details>
+      </div>
+      <div id="specWrap">
+        <label><input type="checkbox" id="specOn"> Spectrum (Anima)</label>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">Spectrum: predicts most steps instead of running the full model on each one, so it's faster (its author claims about 1.75×). It replaces Speed up (TeaCache) while on, and it changes the picture slightly. Compare before keeping it.</div></details>
+      </div>
+      <div id="sageWrap">
+        <label><input type="checkbox" id="sageOn"> Fast attention</label>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint">SageAttention (through KJNodes): the same picture with a faster attention step. In our test on an RTX 3050 it was about 8% faster per picture and looked the same. Turn it off if a picture comes out black or noisy.</div></details>
+      </div>
+      <div id="detailWrap">
+        <label for="detail">Extra detail</label>
+        <select id="detail"><option value="0">Off</option><option value="0.05">Light</option><option value="0.1">Medium</option><option value="0.2">Strong</option></select>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint" id="detailNote">Detail Daemon: adds small detail (hair strands, fabric, background) at no extra time. Clearly visible on Illustrious / Pony even at Light; subtle on Anima. Strong can get busy.</div></details>
+      </div>
+      <div id="coupleBox">
+        <label class="check" title="Each person's tags only act on their half of the picture, so hair, eyes and clothes don't swap or mix"><input type="checkbox" id="coupleOn"> Two people: keep their looks apart (left / right)</label>
+        <div id="coupleWrap">
+          <label for="coupleLeft">Person on the left</label>
+          <textarea id="coupleLeft" rows="2" placeholder="1girl, long silver hair, golden eyes, black kimono"></textarea>
+          <label for="coupleRight">Person on the right</label>
+          <textarea id="coupleRight" rows="2" placeholder="1boy, short black hair, blue eyes, white shirt"></textarea>
+        </div>
+        <details class="help"><summary>ⓘ How it works</summary><div class="hint" id="coupleNote">Put the scene and the people count (e.g. 1girl, 1boy) in the prompt. In stories, manga and game art it splits your character and the co-star by itself.</div></details>
+      </div>
+    </section>
+    <section>
+      <div class="h"><span>Size &amp; seed</span></div>
+      <label for="size" style="margin-top:0">Size</label>
+      <select id="size">
+        <option value="832x1216">832 × 1216 · portrait</option>
+        <option value="1216x832">1216 × 832 · landscape</option>
+        <option value="1024x1024">1024 × 1024 · square</option>
+        <option value="896x1152">896 × 1152 · portrait</option>
+        <option value="1152x896">1152 × 896 · landscape</option>
+        <option value="768x1344">768 × 1344 · tall</option>
+        <option value="1344x768">1344 × 768 · wide</option>
+        <option value="1080x1920">1080 × 1920 · Full HD tall</option>
+        <option value="1920x1080">1920 × 1080 · Full HD wide</option>
+        <option value="1440x2560">1440 × 2560 · 2K tall</option>
+        <option value="2560x1440">2560 × 1440 · 2K wide</option>
+        <option value="512x768">512 × 768 · portrait (SD 1.5)</option>
+        <option value="768x512">768 × 512 · landscape (SD 1.5)</option>
+        <option value="512x512">512 × 512 · square (SD 1.5)</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <div class="row" id="customSize" style="display:none">
+        <div><label for="w">Width</label><input type="number" id="w" step="64" min="256" max="2560"></div>
+        <div><label for="h">Height</label><input type="number" id="h" step="64" min="256" max="2560"></div>
+      </div>
+      <label for="count">Images per LoRA</label><input type="number" id="count" min="1" max="16">
+      <label for="seed">Seed <span class="hint" style="display:inline">(same seed for every LoRA, +1 per extra image)</span></label>
+      <div class="inline"><input type="number" id="seed" min="0"><button class="btn sm" id="dice" title="New random seed">🎲</button></div>
+      <label class="check"><input type="checkbox" id="autoSeed"> New random seed every time I press Generate</label>
+    </section>
+    <section>
+      <div class="h"><span>Sampling</span></div>
+      <div class="slider"><label for="steps">Sampling steps</label>
+        <div class="inline"><input type="range" id="stepsR" min="1" max="100"><input type="number" id="steps" min="1" max="100"></div></div>
+      <div class="slider"><label for="cfg">CFG Scale</label>
+        <div class="inline"><input type="range" id="cfgR" min="1" max="20" step="0.5"><input type="number" id="cfg" min="1" max="20" step="0.5"></div></div>
+      <div class="row">
+        <div><label for="sampler">Sampler</label><select id="sampler"></select></div>
+        <div id="schedWrap"><label for="scheduler">Scheduler</label><select id="scheduler"></select></div>
+      </div>
+      <label class="check" title="VAE, text encoder and clip skip, in the Model tab"><input type="checkbox" id="advanced"> Show model files (VAE, text encoder, clip skip)</label>
+    </section>
+  </div>
+
+  </div>
+</aside>
+</div>
+
+<div class="lb" id="lb">
+  <button class="x" id="lbX" aria-label="Close">×</button>
+  <button class="nav prev" id="lbPrev" aria-label="Previous">‹</button>
+  <img id="lbImg" alt="">
+  <div class="cap" id="lbCap"></div>
+  <button class="nav next" id="lbNext" aria-label="Next">›</button>
+</div>
+<div class="streader" id="stReader">
+  <button class="x" id="stRX" aria-label="Close">×</button>
+  <button class="nav prev" id="stRPrev" aria-label="Previous">‹</button>
+  <div class="stpage" id="stPage"></div>
+  <button class="nav next" id="stRNext" aria-label="Next">›</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
